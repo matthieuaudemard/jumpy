@@ -21,9 +21,10 @@ class Player(pg.sprite.Sprite):
     def jump(self):
         # jumps only if standing on a plateform
         self.rect.x += 1
-        # hits = pg.sprite.spritecollide(self, self.game.pl)
+        hits = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.x -= 1
-        self.vel.y = -20
+        if hits:
+            self.vel.y = -20
 
     def update(self):
         self.acc = vec(0, PLAYER_GRAVITY)
