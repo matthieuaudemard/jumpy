@@ -1,4 +1,5 @@
 # Plateformer
+import random
 
 from sprites import *
 
@@ -58,10 +59,26 @@ class Game:
             if hits:
                 self.player.pos.y = hits[0].rect.top
                 self.player.vel.y = 0
+        # if player reaches top 1/4 of screen
+        if self.player.rect.top <= HEIGHT / 4:
+            self.player.pos.y += abs(self.player.vel.y)
+            for platform in self.platforms:
+                platform.rect.y += abs(self.player.vel.y)
+                if platform.rect.top >= HEIGHT:
+                    platform.kill()
+
+        # spawn new platforms to keep some average number
+        while len(self.platforms) < 5:
+            width = random.randrange(50, 100)
+            p = Platform(random.randrange(0, WIDTH-width),
+                         random.randrange(-75, -30),
+                         width, 20)
+            self.platforms.add(p)
+            self.all_sprites.add(p)
 
     def events(self):
         """
-        gamme loop - events
+        game loop - events
         :return:
         """
         for event in pg.event.get():
