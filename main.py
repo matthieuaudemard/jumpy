@@ -16,7 +16,8 @@ class Game:
         self.running = True
         self.playing = False
         self.all_sprites = pg.sprite.Group()
-        self.player = Player()
+        self.platforms = pg.sprite.Group()
+        self.player = Player(self)
 
     def new(self):
         """
@@ -24,8 +25,15 @@ class Game:
         :return:
         """
         self.all_sprites = pg.sprite.Group()
-        self.player = Player()
+        self.platforms = pg.sprite.Group()
+        self.player = Player(self)
         self.all_sprites.add(self.player)
+        p1 = Platform(0, HEIGHT - 40, WIDTH, 40)
+        p2 = Platform(WIDTH / 2 - 50, HEIGHT * 3 / 4, 100, 20)
+        self.all_sprites.add(p1)
+        self.platforms.add(p1)
+        self.all_sprites.add(p2)
+        self.platforms.add(p2)
         self.run()
 
     def run(self):
@@ -42,6 +50,10 @@ class Game:
 
     def update(self):
         self.all_sprites.update()
+        hits = pg.sprite.spritecollide(self.player, self.platforms, False)
+        if hits:
+            self.player.pos.y = hits[0].rect.top
+            self.player.vel.y = 0
         """
         game loop - update
         :return:
@@ -59,6 +71,11 @@ class Game:
                 if self.playing:
                     self.playing = False
                 self.running = False
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    self.player.jump()
+                if event.key == pg.K_ESCAPE:
+                    pg.event.post(pg.event.Event(pg.QUIT))
 
     def draw(self):
         """

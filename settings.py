@@ -6,7 +6,8 @@ FPS = 60
 
 # Player properties
 PLAYER_ACC = 0.5
-PLAYER_FRICTION = -0.03
+PLAYER_FRICTION = -0.12
+PLAYER_GRAVITY = 0.8
 
 # define colors
 WHITE = (255, 255, 255)
