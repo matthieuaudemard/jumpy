@@ -19,12 +19,15 @@ class Game:
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
         self.player = Player(self)
+        self.font_name = pg.font.match_font(FONT_NAME)
+        self.score = 0
 
     def new(self):
         """
         start a new game
         :return:
         """
+        self.score = 0
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
         self.player = Player(self)
@@ -66,6 +69,15 @@ class Game:
                 platform.rect.y += abs(self.player.vel.y)
                 if platform.rect.top >= HEIGHT:
                     platform.kill()
+                    self.score += 10
+        # die !
+        if self.player.rect.bottom > HEIGHT:
+            for sprite in self.all_sprites:
+                sprite.rect.y -= max(self.player.vel.y, 10)
+                if sprite.rect.bottom < 0:
+                    sprite.kill()
+        if len(self.platforms) == 0:
+            self.playing = False
 
         # spawn new platforms to keep some average number
         while len(self.platforms) < 5:
@@ -98,8 +110,9 @@ class Game:
         game loop - draw
         :return:
         """
-        self.screen.fill(BLACK)
+        self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
+        self.draw_text(str(self.score), 22, WHITE, WIDTH / 2, 15)
         # *after* drawing everything, flip the display
         pg.display.flip()
 
@@ -108,14 +121,56 @@ class Game:
         game start screen
         :return:
         """
-        pass
+        self.screen.fill(BGCOLOR)
+        self.draw_text(TITLE, 48, WHITE, WIDTH / 2, HEIGHT / 4)
+        self.draw_text("Arrows to move, Space to jump", 22, WHITE, WIDTH / 2, HEIGHT / 2)
+        self.draw_text("Press a key to play or esc to quit ", 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
+        pg.display.flip()
+        self.wait_for_key()
 
     def show_go_screen(self):
         """
         game over / continue
         :return:
         """
-        pass
+        if not self.running:
+            return
+        self.screen.fill(BGCOLOR)
+        self.draw_text('GAME OVER', 48, WHITE, WIDTH / 2, HEIGHT / 4)
+        self.draw_text("Score : " + str(self.score), 22, WHITE, WIDTH / 2, HEIGHT / 2)
+        self.draw_text("Press a key to play again or esc to quit", 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
+        pg.display.flip()
+        self.wait_for_key()
+
+    def draw_text(self, text, size, color, x, y):
+        """
+        draw text on the game surface at (x, y) position whith given color
+        :param text: string to draw
+        :param size: size of the text
+        :param color: color of the text
+        :param x: x coordinate of the text
+        :param y: y coordiante of the text
+        :return: None
+        """
+        font = pg.font.Font(self.font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.midtop = (x, y)
+        self.screen.blit(text_surface, text_rect)
+
+    def wait_for_key(self):
+        waiting = True
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.running = False
+                elif event.type == pg.KEYUP:
+                    if event.key == pg.K_ESCAPE:
+                        pg.event.post(pg.event.Event(pg.QUIT))
+                    else:
+                        waiting = False
 
 
 if __name__ == "__main__":
