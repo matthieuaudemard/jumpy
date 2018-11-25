@@ -1,6 +1,6 @@
 # Jump High (aka Jumpy)
 
-(img/icon.png) **Jump High** is a simple **Python 3** Jumper-like game written with **Pygame**.
+![alt text](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png) **Jump High** is a simple **Python 3** Jumper-like game written with **Pygame**.
 
 ## Requirements
 * [Python 3](https://www.python.org/downloads/)
