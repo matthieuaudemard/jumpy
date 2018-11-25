@@ -3,8 +3,9 @@ TITLE = "Platformer"
 WIDTH = 480
 HEIGHT = 600
 FPS = 60
-FONT_NAME = 'arial'
+FONT_NAME = 'Georgia'
 HS_FILE = 'highscores.txt'
+SPRITESHEET = 'spritesheet_jumper.png'
 
 # Player properties
 PLAYER_ACC = 0.5
@@ -25,5 +26,5 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
-LIGHTBLUE = (0, 155, 155)
+LIGHTBLUE = (173, 230, 255)
 BGCOLOR = LIGHTBLUE

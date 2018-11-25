@@ -13,6 +13,9 @@ class Game:
         pg.init()
         pg.mixer.init()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+        self.dir = path.dirname(__file__)
+        self.highscore = 0
+        self.load_data()  # loading data and textures
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         self.running = True
@@ -22,13 +25,17 @@ class Game:
         self.player = Player(self)
         self.font_name = pg.font.match_font(FONT_NAME)
         self.score = 0
-        self.dir = path.dirname(__file__)
-        self.highscore = 0
-        self.load_data()
 
     def load_data(self):
+        """
+        load spritesheet and highscore
+        :return:
+        """
+        # load spritesheet image
+        img_dir = path.join(self.dir, 'img')
+        self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
         # load high score
-        with open(path.join(self.dir, HS_FILE), 'w') as f:
+        with open(path.join(self.dir, HS_FILE), 'r') as f:
             try:
                 self.highscore = int(f.read())
             except ValueError:  # file doesn't exists or is empty
@@ -111,6 +118,7 @@ class Game:
                 if self.playing:
                     self.playing = False
                 self.running = False
+            # check for keydown event
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
@@ -136,7 +144,7 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_text(TITLE, 48, WHITE, WIDTH / 2, HEIGHT / 4)
         self.draw_text('Arrows to move, Space to jump', 22, WHITE, WIDTH / 2, HEIGHT / 2)
-        self.draw_text('Press a key to play or esc to quit ', 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
+        self.draw_text('Press enter to play or esc to quit ', 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
         self.draw_text('High Score: ' + str(self.highscore), 22, WHITE, WIDTH / 2, 15)
         pg.display.flip()
         self.wait_for_key()
@@ -151,7 +159,7 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_text('GAME OVER', 48, WHITE, WIDTH / 2, HEIGHT / 4)
         self.draw_text("Score : " + str(self.score), 22, WHITE, WIDTH / 2, HEIGHT / 2)
-        self.draw_text("Press a key to play again or esc to quit", 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
+        self.draw_text("Press enter play again or esc to quit", 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
         if self.score > self.highscore:
             self.highscore = self.score
             self.draw_text('NEW HIGH SCORE!', 22, WHITE, WIDTH / 2, HEIGHT / 2 + 40)
@@ -189,7 +197,7 @@ class Game:
                 elif event.type == pg.KEYUP:
                     if event.key == pg.K_ESCAPE:
                         pg.event.post(pg.event.Event(pg.QUIT))
-                    else:
+                    elif event.key == pg.K_RETURN:
                         waiting = False
 
 
