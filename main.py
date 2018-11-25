@@ -51,7 +51,7 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.player = Player(self)
         for platform in PLATFORM_LIST:
-            p = Platform(*platform)
+            p = Platform(self, *platform)
             self.all_sprites.add(p)
             self.platforms.add(p)
         self.all_sprites.add(self.player)
@@ -101,9 +101,8 @@ class Game:
         # spawn new platforms to keep some average number
         while len(self.platforms) < 5:
             width = random.randrange(50, 100)
-            p = Platform(random.randrange(0, WIDTH-width),
-                         random.randrange(-75, -30),
-                         width, 20)
+            p = Platform(self, random.randrange(0, WIDTH-width),
+                         random.randrange(-75, -30))
             self.platforms.add(p)
             self.all_sprites.add(p)
 
@@ -132,9 +131,9 @@ class Game:
         """
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
+        self.screen.blit(self.player.image, self.player.rect)  # to make sure the player is always in front
         self.draw_text(str(self.score), 22, WHITE, WIDTH / 2, 15)
-        # *after* drawing everything, flip the display
-        pg.display.flip()
+        pg.display.flip()  # *after* drawing everything, flip the display
 
     def show_start_screen(self):
         """

@@ -1,5 +1,6 @@
 # sprite classes for jumpy game
 import pygame as pg
+from random import choice
 
 from settings import *
 
@@ -41,8 +42,7 @@ class Player(pg.sprite.Sprite):
         self.image = self.game.spritesheet.get_image(614, 1063, 120, 191)
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.pos = vec(WIDTH / 2, HEIGHT / 2)
+        self.pos = vec(30, HEIGHT - 100)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
@@ -142,10 +142,16 @@ class Player(pg.sprite.Sprite):
 
 
 class Platform(pg.sprite.Sprite):
-    def __init__(self, x, y, w, h):
+    def __init__(self, game, x, y):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.Surface((w, h))
-        self.image.fill(GREEN)
+        self.game = game
+        images = [self.game.spritesheet.get_image(0, 288, 380, 94),
+                  self.game.spritesheet.get_image(0, 384, 380, 94),
+                  self.game.spritesheet.get_image(213, 1662, 201, 100),
+                  self.game.spritesheet.get_image(382, 204, 200, 100),
+                  ]
+        self.image = choice(images)
+        self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
