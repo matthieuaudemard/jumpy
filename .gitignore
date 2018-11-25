@@ -297,3 +297,6 @@ $RECYCLE.BIN/
 .idea/modules.xml
 .idea/plateformer.iml
 .idea/workspace.xml
+
+### game files ###
+highscores.txt
