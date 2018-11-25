@@ -2,7 +2,7 @@
 TITLE = "Jump High (aka Jumpy)"
 WIDTH = 480
 HEIGHT = 600
-FPS = 6000000
+FPS = 60
 FONT_NAME = 'Georgia'
 HS_FILE = 'highscores.txt'
 SPRITESHEET = 'spritesheet_jumper.png'

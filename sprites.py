@@ -1,6 +1,7 @@
 # sprite classes for jumpy game
-import pygame as pg
 from random import choice
+
+import pygame as pg
 
 from settings import *
 
@@ -67,8 +68,17 @@ class Player(pg.sprite.Sprite):
         self.rect.x += 1
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.x -= 1
-        if hits:
+        if hits and not self.jumping:
+            self.jumping = True
             self.vel.y = -20
+
+    def jump_cut(self):
+        """
+        Cut the jump in case of a quick space key press
+        :return:
+        """
+        if self.jumping and self.vel.y < 0:
+            self.vel.y = -8
 
     def animate(self):
         """
@@ -80,11 +90,6 @@ class Player(pg.sprite.Sprite):
             self.walking = True
         else:
             self.walking = False
-
-        if self.vel.y < 0:
-            self.jumping = True
-        else:
-            self.jumping = False
 
         # show jump animation
         if self.jumping:
@@ -115,6 +120,10 @@ class Player(pg.sprite.Sprite):
                 self.rect.bottom = bottom
 
     def update(self):
+        """
+        motion management with gravity and friction
+        :return:
+        """
         self.animate()
         self.acc = vec(0, PLAYER_GRAVITY)
         keys = pg.key.get_pressed()
