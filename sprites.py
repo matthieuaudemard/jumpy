@@ -157,10 +157,7 @@ class Platform(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.game = game
         images = [self.game.spritesheet.get_image(0, 288, 380, 94),
-                  self.game.spritesheet.get_image(0, 384, 380, 94),
-                  self.game.spritesheet.get_image(213, 1662, 201, 100),
-                  self.game.spritesheet.get_image(382, 204, 200, 100),
-                  ]
+                  self.game.spritesheet.get_image(213, 1662, 201, 100)]
         self.image = choice(images)
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()

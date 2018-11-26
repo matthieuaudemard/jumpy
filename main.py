@@ -121,7 +121,7 @@ class Game:
         # spawn new platforms to keep some average number
         while len(self.platforms) < 5:
             p = Platform(self, random.randrange(0, WIDTH - 30),
-                         random.randrange(-75, -50))
+                         random.randrange(-70, -50))
             self.platforms.add(p)
             self.all_sprites.add(p)
 
