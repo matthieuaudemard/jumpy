@@ -1,4 +1,7 @@
-# Plateformer
+# Jumpy
+# Graphics by Kenney @ https://kenney.nl/assets/jumper-pack
+# Music - Mushroom-dance @ https://opengameart.org/content/mushroom-dance
+#       - Jump and run tropical mix @ https://opengameart.org/content/jump-and-run-tropical-mix
 import random
 from os import path
 
@@ -14,6 +17,8 @@ class Game:
         pg.mixer.init()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         self.dir = path.dirname(__file__)
+        self.snd_dir = path.join(self.dir, 'snd')
+        self.img_dir = path.join(self.dir, 'img')
         self.highscore = 0
         self.load_data()  # loading data and textures
         pg.display.set_caption(TITLE)
@@ -32,8 +37,8 @@ class Game:
         :return:
         """
         # load spritesheet image
-        img_dir = path.join(self.dir, 'img')
-        self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+        self.spritesheet = Spritesheet(path.join(self.img_dir, SPRITESHEET))
+        self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump42.wav'))
         # load high score
         with open(path.join(self.dir, HS_FILE), 'r') as f:
             try:
@@ -55,6 +60,7 @@ class Game:
             self.all_sprites.add(p)
             self.platforms.add(p)
         self.all_sprites.add(self.player)
+        pg.mixer.music.load(path.join(self.snd_dir, PLAY_MUSIC))
         self.run()
 
     def run(self):
@@ -62,12 +68,15 @@ class Game:
         game loop
         :return:
         """
+        pg.mixer.music.play(loops=-1)
+        pg.mixer.music.set_volume(1)
         self.playing = True
         while self.playing:
             self.clock.tick(FPS)
             self.events()
             self.update()
             self.draw()
+        pg.mixer.music.fadeout(50)
 
     def update(self):
         """
@@ -107,9 +116,8 @@ class Game:
 
         # spawn new platforms to keep some average number
         while len(self.platforms) < 5:
-            width = random.randrange(50, 100)
-            p = Platform(self, random.randrange(0, WIDTH-width),
-                         random.randrange(-75, -30))
+            p = Platform(self, random.randrange(0, WIDTH - 30),
+                         random.randrange(-75, -50))
             self.platforms.add(p)
             self.all_sprites.add(p)
 
@@ -166,6 +174,9 @@ class Game:
         if not self.running:
             return
         self.screen.fill(BGCOLOR)
+        pg.mixer.music.load(path.join(self.snd_dir, SCREEN_MUSIC))
+        pg.mixer.music.play(loops=-1)
+        pg.mixer.music.set_volume(0.3)
         self.draw_text('GAME OVER', 48, WHITE, WIDTH / 2, HEIGHT / 4)
         self.draw_text("Score : " + str(self.score), 22, WHITE, WIDTH / 2, HEIGHT / 2)
         self.draw_text("Press enter play again or esc to quit", 22, WHITE, WIDTH / 2, HEIGHT * 3 / 4)
@@ -178,6 +189,7 @@ class Game:
             self.draw_text('High Score: ' + str(self.highscore), 22, WHITE, WIDTH / 2, 15)
         pg.display.flip()
         self.wait_for_key()
+        pg.mixer.music.stop()
 
     def draw_text(self, text, size, color, x, y):
         """

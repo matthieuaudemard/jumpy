@@ -6,11 +6,14 @@ FPS = 60
 FONT_NAME = 'Georgia'
 HS_FILE = 'highscores.txt'
 SPRITESHEET = 'spritesheet_jumper.png'
+PLAY_MUSIC = 'mushroom dance_0.ogg'
+SCREEN_MUSIC = 'jump and run - tropics.ogg'
 
 # Player properties
 PLAYER_ACC = 0.7
-PLAYER_FRICTION = -0.12
+PLAYER_FRICTION = -0.06
 PLAYER_GRAVITY = 0.8
+PLAYER_JUMP = 20
 
 # starting platforms
 PLATFORM_LIST = [(0, HEIGHT - 60),
