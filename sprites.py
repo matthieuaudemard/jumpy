@@ -1,6 +1,6 @@
 # sprite classes for jumpy game
 import xml.etree.ElementTree
-from random import choice
+from random import choice, randrange
 
 import pygame as pg
 
@@ -45,6 +45,7 @@ class Spritesheet:
 
 class Player(pg.sprite.Sprite):
     def __init__(self, game):
+        self.groups = game.all_sprites
         pg.sprite.Sprite.__init__(self)
         self.game = game
         self.walking = False
@@ -166,7 +167,8 @@ class Player(pg.sprite.Sprite):
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, game, x, y):
-        pg.sprite.Sprite.__init__(self)
+        self.groups = game.all_sprites, game.platforms
+        pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         images = [self.game.spritesheet.get_image('ground_grass.png'),
                   # self.game.spritesheet.get_image('ground_grass_broken.png'),
@@ -178,4 +180,55 @@ class Platform(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        if randrange(100) < POW_SPWAN_PCT:
+            Pow(self.game, self)
+
+
+class Pow(pg.sprite.Sprite):
+
+    pow_span_pct = POW_SPWAN_PCT
+
+    def __init__(self, game, platform):
+        self.groups = game.all_sprites, game.powerups
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.platform = platform
+        self.type = choice(['spring'])
+        self.normal_frame = self.game.spritesheet.get_image('spring.png')
+        self.engaged_frames = [self.game.spritesheet.get_image('spring_in.png'),
+                               self.game.spritesheet.get_image('spring.png'),
+                               self.game.spritesheet.get_image('spring_out.png'), ]
+        self.image = self.normal_frame
+        self.current_frame = 0
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = self.platform.rect.centerx
+        self.rect.bottom = self.platform.rect.top
+        self.engaged = False
+        self.last_update = 0
+
+    def update(self, *args):
+        if self.game.platforms.has(self.platform):
+            self.animate()
+        else:
+            self.kill()
+
+    def animate(self):
+        now = pg.time.get_ticks()
+
+        if self.engaged and now - self.last_update > 1500 and \
+           self.current_frame < len(self.engaged_frames):
+                self.image = self.engaged_frames[self.current_frame]
+                self.current_frame += 1
+                self.rect = self.image.get_rect()
+                self.rect.centerx = self.platform.rect.centerx
+                self.rect.bottom = self.platform.rect.top
+
+        elif not self.engaged or self.current_frame >= len(self.engaged_frames):
+            self.image = self.normal_frame
+            self.current_frame = 0
+            self.engaged = False
+            self.rect = self.image.get_rect()
+            self.rect.centerx = self.platform.rect.centerx
+            self.rect.bottom = self.platform.rect.top
 

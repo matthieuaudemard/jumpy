@@ -11,7 +11,7 @@ Musics :
 ## Requirements
 * [Python 3](https://www.python.org/downloads/)
 ```bash
-python3 -m pip install -U pygame --user
+python -m pip install -U pygame --user
 ```
 
 ## TODO

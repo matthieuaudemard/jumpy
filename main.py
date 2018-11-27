@@ -27,6 +27,7 @@ class Game:
         self.playing = False
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
+        self.powerups = pg.sprite.Group()
         self.player = Player(self)
         self.font_name = pg.font.match_font(FONT_NAME)
         self.score = 0
@@ -39,6 +40,8 @@ class Game:
         # load spritesheet image
         self.spritesheet = Spritesheet(path.join(self.img_dir, SPRITESHEET))
         self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump42.wav'))
+        self.spring_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump50.wav'))
+        self.spring_sound.set_volume(0.2)
         # load high score
         open_rights = 'w'
         hs_file = path.join(self.dir, HS_FILE)
@@ -60,9 +63,7 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.player = Player(self)
         for platform in PLATFORM_LIST:
-            p = Platform(self, *platform)
-            self.all_sprites.add(p)
-            self.platforms.add(p)
+            Platform(self, *platform)
         self.all_sprites.add(self.player)
         pg.mixer.music.load(path.join(self.snd_dir, PLAY_MUSIC))
         self.run()
@@ -104,11 +105,25 @@ class Game:
         # if player reaches top 1/4 of screen
         if self.player.rect.top <= HEIGHT / 4:
             self.player.pos.y += max(abs(self.player.vel.y), 2)
+            # updating platforms positions
             for platform in self.platforms:
                 platform.rect.y += max(abs(self.player.vel.y), 2)
                 if platform.rect.top >= HEIGHT:
                     platform.kill()
                     self.score += 10
+            # updating powerups positions
+            for pow_hit in self.powerups:
+                pow_hit.rect.y += max(abs(self.player.vel.y), 2)
+
+        # if player hist powerup
+        pow_hits = pg.sprite.spritecollide(self.player, self.powerups, False)
+        for pow_hit in pow_hits:
+             if pow_hit.type == 'spring' and self.player.pos.y < pow_hit.rect.centery and self.player.vel.y >= 0:
+                        self.player.vel.y = -BOOST_POWER
+                        self.player.jumping = False
+                        pow_hit.engaged = True
+                        self.spring_sound.play()
+
         # die !
         if self.player.rect.bottom > HEIGHT:
             for sprite in self.all_sprites:
@@ -120,10 +135,8 @@ class Game:
 
         # spawn new platforms to keep some average number
         while len(self.platforms) < 5:
-            p = Platform(self, random.randrange(0, WIDTH - 30),
-                         random.randrange(-70, -50))
-            self.platforms.add(p)
-            self.all_sprites.add(p)
+            Platform(self, random.randrange(0, WIDTH - 30),
+                     random.randrange(-70, -50))
 
     def events(self):
         """
