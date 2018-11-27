@@ -1,4 +1,5 @@
 # sprite classes for jumpy game
+import xml.etree.ElementTree
 from random import choice
 
 import pygame as pg
@@ -14,15 +15,26 @@ class Spritesheet:
     """
     def __init__(self, filename):
         self.sheet = pg.image.load(filename).convert()
+        self.all_elements = xml.etree.ElementTree.parse(filename.replace('.png', '.xml')).getroot().findall('SubTexture')
 
-    def get_image(self, x, y, width, height):
+    def get_image(self, name):
         """
-        grab an image out of the spritesheet
+        grab an image out of the spritesheet by its name in the xml file
+        :param name: name of the image i.e: 'bunny1_jump.png'
+        :return: pygame.Surface
+        """
+        for elt in self.all_elements:
+            if elt.get('name') == name:
+                return self._get_image(int(elt.get('x')), int(elt.get('y')), int(elt.get('width')), int(elt.get('height')))
+
+    def _get_image(self, x, y, width, height):
+        """
+        grab an image out of the spritesheet by its coordonates
         :param x:
         :param y:
         :param width:
         :param height:
-        :return:
+        :return: pygame.Surface
         """
         image = pg.Surface((width, height))
         image.blit(self.sheet, (0, 0), (x, y, width, height))
@@ -40,7 +52,7 @@ class Player(pg.sprite.Sprite):
         self.current_frame = 0
         self.last_update = 0
         self.load_images()
-        self.image = self.game.spritesheet.get_image(614, 1063, 120, 191)
+        self.image = self.game.spritesheet.get_image('bunny2_ready.png')
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.pos = vec(30, HEIGHT - 100)
@@ -52,12 +64,12 @@ class Player(pg.sprite.Sprite):
         Load all images from the spritesheet
         :return:
         """
-        self.standing_frames = [self.game.spritesheet.get_image(614, 1063, 120, 191),
-                                self.game.spritesheet.get_image(690, 406, 120, 201), ]
-        self.walking_frames_r = [self.game.spritesheet.get_image(678, 860, 120, 201),
-                                 self.game.spritesheet.get_image(692, 1458, 120, 207), ]
+        self.standing_frames = [self.game.spritesheet.get_image('bunny1_stand.png'),
+                                self.game.spritesheet.get_image('bunny1_ready.png'), ]
+        self.walking_frames_r = [self.game.spritesheet.get_image('bunny1_walk1.png'),
+                                 self.game.spritesheet.get_image('bunny1_walk2.png'), ]
         self.walking_frames_l = [pg.transform.flip(frame, True, False) for frame in self.walking_frames_r]
-        self.jump_frame = self.game.spritesheet.get_image(382, 763, 150, 181)
+        self.jump_frame = self.game.spritesheet.get_image('bunny1_jump.png')
 
     def jump(self):
         """
@@ -156,10 +168,10 @@ class Platform(pg.sprite.Sprite):
     def __init__(self, game, x, y):
         pg.sprite.Sprite.__init__(self)
         self.game = game
-        images = [self.game.spritesheet.get_image(0, 288, 380, 94),
-                  self.game.spritesheet.get_image(0, 384, 380, 94),
-                  self.game.spritesheet.get_image(213, 1662, 201, 100),
-                  self.game.spritesheet.get_image(382, 204, 200, 100),
+        images = [self.game.spritesheet.get_image('ground_grass.png'),
+                  # self.game.spritesheet.get_image('ground_grass_broken.png'),
+                  self.game.spritesheet.get_image('ground_grass_small.png'),
+                  # self.game.spritesheet.get_image('ground_grass_small_broken.png'),
                   ]
         self.image = choice(images)
         self.image.set_colorkey(BLACK)
