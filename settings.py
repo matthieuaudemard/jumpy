@@ -1,5 +1,5 @@
 # Game options
-TITLE = "Jump High (aka Jumpy)"
+TITLE = "Jump High (aka JumPy)"
 WIDTH = 480
 HEIGHT = 600
 FPS = 60
@@ -11,7 +11,7 @@ SCREEN_MUSIC = 'jump and run - tropics.ogg'
 
 # Player properties
 PLAYER_ACC = 0.7
-PLAYER_FRICTION = -0.06
+PLAYER_FRICTION = -0.09
 PLAYER_GRAVITY = 0.8
 PLAYER_JUMP = 20
 

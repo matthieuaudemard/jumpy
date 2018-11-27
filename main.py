@@ -40,7 +40,11 @@ class Game:
         self.spritesheet = Spritesheet(path.join(self.img_dir, SPRITESHEET))
         self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump42.wav'))
         # load high score
-        with open(path.join(self.dir, HS_FILE), 'r') as f:
+        open_rights = 'w'
+        hs_file = path.join(self.dir, HS_FILE)
+        if path.isfile(hs_file):
+            open_rights = 'r'
+        with open(hs_file, open_rights) as f:
             try:
                 self.highscore = int(f.read())
             except ValueError:  # file doesn't exists or is empty
@@ -117,7 +121,7 @@ class Game:
         # spawn new platforms to keep some average number
         while len(self.platforms) < 5:
             p = Platform(self, random.randrange(0, WIDTH - 30),
-                         random.randrange(-75, -50))
+                         random.randrange(-70, -50))
             self.platforms.add(p)
             self.all_sprites.add(p)
 
