@@ -9,7 +9,8 @@ Musics :
 * [Jump and run tropical mix](https://opengameart.org/content/jump-and-run-tropical-mix)
 
 ## Requirements
-* [Python 3](https://www.python.org/downloads/)
+* [Python 3](https://www.python.org/downloads/) (with pip module installed)
+* then install pygame module
 ```bash
 python -m pip install -U pygame --user
 ```

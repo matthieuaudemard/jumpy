@@ -15,7 +15,7 @@ class Spritesheet:
     """
     def __init__(self, filename):
         self.sheet = pg.image.load(filename).convert()
-        self.all_elements = xml.etree.ElementTree.parse(filename.replace('.png', '.xml')).getroot().findall('SubTexture')
+        self.elements = xml.etree.ElementTree.parse(filename.replace('.png', '.xml')).getroot().findall('SubTexture')
 
     def get_image(self, name):
         """
@@ -23,7 +23,7 @@ class Spritesheet:
         :param name: name of the image i.e: 'bunny1_jump.png'
         :return: pygame.Surface
         """
-        for elt in self.all_elements:
+        for elt in self.elements:
             if elt.get('name') == name:
                 return self._get_image(int(elt.get('x')), int(elt.get('y')), int(elt.get('width')), int(elt.get('height')))
 
@@ -45,11 +45,13 @@ class Spritesheet:
 
 class Player(pg.sprite.Sprite):
     def __init__(self, game):
+        self._layer = PLAYER_LAYER
         self.groups = game.all_sprites
-        pg.sprite.Sprite.__init__(self)
+        pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.walking = False
         self.jumping = False
+        self.hurted = False
         self.current_frame = 0
         self.last_update = 0
         self.load_images()
@@ -71,6 +73,7 @@ class Player(pg.sprite.Sprite):
                                  self.game.spritesheet.get_image('bunny1_walk2.png'), ]
         self.walking_frames_l = [pg.transform.flip(frame, True, False) for frame in self.walking_frames_r]
         self.jump_frame = self.game.spritesheet.get_image('bunny1_jump.png')
+        self.hurted_frame = self.game.spritesheet.get_image('bunny1_hurt.png')
 
     def jump(self):
         """
@@ -106,13 +109,18 @@ class Player(pg.sprite.Sprite):
         else:
             self.walking = False
 
+        # show hurted frame
+        if self.hurted:
+            self.image = self.hurted_frame
+            self.current_frame += 1
+
         # show jump animation
-        if self.jumping:
+        if self.jumping and not self.hurted:
             self.current_frame = 0
             self.image = self.jump_frame
 
         # show walk animation
-        if self.walking and not self.jumping:
+        if self.walking and not self.jumping and not self.hurted:
             if now - self.last_update > 100:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.walking_frames_l)
@@ -125,7 +133,7 @@ class Player(pg.sprite.Sprite):
                 self.rect.bottom = bottom
 
         # show idle animation
-        if not self.jumping and not self.walking:
+        if not self.jumping and not self.walking and not self.hurted:
             if now - self.last_update > 350:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
@@ -133,6 +141,7 @@ class Player(pg.sprite.Sprite):
                 self.image = self.standing_frames[self.current_frame]
                 self.rect = self.image.get_rect()
                 self.rect.bottom = bottom
+        self.mask = pg.mask.from_surface(self.image)
 
     def update(self):
         """
@@ -167,6 +176,7 @@ class Player(pg.sprite.Sprite):
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, game, x, y):
+        self._layer = PLATFORM_LAYER
         self.groups = game.all_sprites, game.platforms
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
@@ -189,6 +199,7 @@ class Pow(pg.sprite.Sprite):
     pow_span_pct = POW_SPWAN_PCT
 
     def __init__(self, game, platform):
+        self._layer = POW_LAYER
         self.groups = game.all_sprites, game.powerups
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
@@ -197,6 +208,8 @@ class Pow(pg.sprite.Sprite):
         self.normal_frame = self.game.spritesheet.get_image('spring.png')
         self.engaged_frames = [self.game.spritesheet.get_image('spring_in.png'),
                                self.game.spritesheet.get_image('spring.png'),
+                               self.game.spritesheet.get_image('spring_out.png'),
+                               self.game.spritesheet.get_image('spring_out.png'),
                                self.game.spritesheet.get_image('spring_out.png'), ]
         self.image = self.normal_frame
         self.current_frame = 0
@@ -231,4 +244,43 @@ class Pow(pg.sprite.Sprite):
             self.rect = self.image.get_rect()
             self.rect.centerx = self.platform.rect.centerx
             self.rect.bottom = self.platform.rect.top
+
+
+class Mob(pg.sprite.Sprite):
+
+    def __init__(self, game):
+        self._layer = MOB_LAYER
+        self.groups = game.all_sprites, game.mobs
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image_up = self.game.spritesheet.get_image('flyMan_fly.png')
+        self.image_up.set_colorkey(BLACK)
+        self.image_down = self.game.spritesheet.get_image('flyMan_jump.png')
+        self.image_down.set_colorkey(BLACK)
+        self.image = self.image_up
+        self.rect = self.image.get_rect()
+        self.rect.centerx = choice([-self.rect.width, WIDTH + self.rect.width])
+        self.vx = randrange(1, 4)
+        if self.rect.centerx > WIDTH:
+            self.vx = -self.vx
+        self.rect.y = HEIGHT / 3  # randrange(HEIGHT / 2)  # the mob spawns in the high middle of the screen
+        self.vy = 0
+        self.dy = 0.5
+
+    def update(self, *args):
+        self.rect.x += self.vx
+        self.vy += self.dy
+        if self.vy > 3 or self.vy < -3:
+            self.dy = -self.dy
+        center = self.rect.center
+        if self.dy < 0:
+            self.image = self.image_up
+        else:
+            self.image = self.image_down
+        self.rect = self.image.get_rect()
+        self.mask = pg.mask.from_surface(self.image)
+        self.rect.center = center
+        self.rect.y += self.vy
+        if self.rect.left > WIDTH + 50 or self.rect.right < -50:
+            self.kill()
 

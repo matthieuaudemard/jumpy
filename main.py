@@ -28,9 +28,11 @@ class Game:
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
+        self.mobs = pg.sprite.Group()
         self.player = Player(self)
         self.font_name = pg.font.match_font(FONT_NAME)
         self.score = 0
+        self.mob_timer = 0
 
     def load_data(self):
         """
@@ -61,6 +63,7 @@ class Game:
         self.score = 0
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
+        self.mobs = pg.sprite.Group()
         self.player = Player(self)
         for platform in PLATFORM_LIST:
             Platform(self, *platform)
@@ -89,6 +92,20 @@ class Game:
         :return:
         """
         self.all_sprites.update()
+
+        # spawn a mob ?
+        now = pg.time.get_ticks()
+        if now - self.mob_timer > MOB_FREQ + choice([-1000, -500, 0, 1000, 500, 1000]):
+            self.mob_timer = now
+            Mob(self)
+
+        # hit mobs ?
+        mob_hits = pg.sprite.spritecollide(self.player, self.mobs, False, pg.sprite.collide_mask)
+        if mob_hits:
+            self.player.hurted = True
+            if self.player.current_frame > 2:
+                self.playing = False
+
         # check if player hits on a platform - only if falling
         if self.player.vel.y > 0:
             hits = pg.sprite.spritecollide(self.player, self.platforms, False)
@@ -114,10 +131,14 @@ class Game:
             # updating powerups positions
             for pow_hit in self.powerups:
                 pow_hit.rect.y += max(abs(self.player.vel.y), 2)
+            # updating mobs positions
+            for mob in self.mobs:
+                mob.rect.y += max(abs(self.player.vel.y), 2)
 
         # if player hist powerup
         pow_hits = pg.sprite.spritecollide(self.player, self.powerups, False)
         for pow_hit in pow_hits:
+
              if pow_hit.type == 'spring' and self.player.pos.y < pow_hit.rect.centery and self.player.vel.y >= 0:
                         self.player.vel.y = -BOOST_POWER
                         self.player.jumping = False
@@ -166,7 +187,6 @@ class Game:
         """
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
-        self.screen.blit(self.player.image, self.player.rect)  # to make sure the player is always in front
         self.draw_text(str(self.score), 22, WHITE, WIDTH / 2, 15)
         pg.display.flip()  # *after* drawing everything, flip the display
 
