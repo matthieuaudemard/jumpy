@@ -25,7 +25,7 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
         self.playing = False
-        self.all_sprites = pg.sprite.Group()
+        self.all_sprites = pg.sprite.LayeredUpdates()
         self.platforms = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
         self.mobs = pg.sprite.Group()
@@ -61,7 +61,7 @@ class Game:
         :return:
         """
         self.score = 0
-        self.all_sprites = pg.sprite.Group()
+        self.all_sprites = pg.sprite.LayeredUpdates()
         self.platforms = pg.sprite.Group()
         self.mobs = pg.sprite.Group()
         self.player = Player(self)
@@ -155,9 +155,21 @@ class Game:
             self.playing = False
 
         # spawn new platforms to keep some average number
-        while len(self.platforms) < 5:
-            Platform(self, random.randrange(0, WIDTH - 30),
-                     random.randrange(-70, -50))
+        try:
+            while len(self.platforms) < 5:
+                upper_plateform_y = min([platform.rect.y for platform in self.platforms if platform.rect.y >= 0])
+                start = upper_plateform_y - HEIGHT // 4
+                stop = upper_plateform_y - HEIGHT // 3
+                if start > stop:
+                    start, stop = stop, start
+                y = random.randrange(start, stop)
+                x = random.randrange(0, WIDTH - 30)
+                copy = self.platforms.copy()
+                p = Platform(self, x, y)
+                while pg.sprite.spritecollide(p, copy, True):
+                    pass
+        except ValueError:
+            pass
 
     def events(self):
         """
