@@ -85,8 +85,7 @@ class Player(pg.sprite.Sprite):
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.x -= 1
         if hits and not self.jumping:
-            self.game.jump_sound.play()
-            self.game.jump_sound.set_volume(0.1)
+            self.game.sounds['jump'].play()
             self.jumping = True
             self.vel.y = -PLAYER_JUMP
 
@@ -181,7 +180,7 @@ class Platform(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         images = [self.game.spritesheet.get_image('ground_grass.png'),
-                  # self.game.spritesheet.get_image('ground_grass_broken.png'),
+                  self.game.spritesheet.get_image('ground_grass_broken.png'),
                   self.game.spritesheet.get_image('ground_grass_small.png'),
                   # self.game.spritesheet.get_image('ground_grass_small_broken.png'),
                   ]
@@ -204,14 +203,11 @@ class Pow(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.platform = platform
-        self.type = choice(['spring'])
-        self.normal_frame = self.game.spritesheet.get_image('spring.png')
-        self.engaged_frames = [self.game.spritesheet.get_image('spring_in.png'),
-                               self.game.spritesheet.get_image('spring.png'),
-                               self.game.spritesheet.get_image('spring_out.png'),
-                               self.game.spritesheet.get_image('spring_out.png'),
-                               self.game.spritesheet.get_image('spring_out.png'), ]
-        self.image = self.normal_frame
+        self.available_types = ['spring', 'coin']
+        self.type = choice(self.available_types)
+        self.frames = {type_name: {} for type_name in self.available_types}
+        self.load_images()
+        self.image = self.frames[self.type]['default_frame']
         self.current_frame = 0
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
@@ -219,6 +215,21 @@ class Pow(pg.sprite.Sprite):
         self.rect.bottom = self.platform.rect.top
         self.engaged = False
         self.last_update = 0
+
+    def load_images(self):
+        self.frames['coin']['default_frame'] = self.game.spritesheet.get_image('gold_1.png')
+        self.frames['coin']['animation'] = [self.game.spritesheet.get_image('gold_1.png'),
+                                            self.game.spritesheet.get_image('gold_2.png'),
+                                            self.game.spritesheet.get_image('gold_3.png'),
+                                            self.game.spritesheet.get_image('gold_4.png'),
+                                            pg.transform.flip(self.game.spritesheet.get_image('gold_3.png'), True, False),
+                                            pg.transform.flip(self.game.spritesheet.get_image('gold_2.png'), True, False), ]
+        self.frames['spring']['default_frame'] = self.game.spritesheet.get_image('spring.png')
+        self.frames['spring']['engaged_frames'] = [self.game.spritesheet.get_image('spring_in.png'),
+                                                   self.game.spritesheet.get_image('spring.png'),
+                                                   self.game.spritesheet.get_image('spring_out.png'),
+                                                   self.game.spritesheet.get_image('spring_out.png'),
+                                                   self.game.spritesheet.get_image('spring_out.png'), ]
 
     def update(self, *args):
         if self.game.platforms.has(self.platform):
@@ -228,22 +239,30 @@ class Pow(pg.sprite.Sprite):
 
     def animate(self):
         now = pg.time.get_ticks()
+        if self.type == 'spring':
+            if self.engaged and now - self.last_update > 1500 and \
+               self.current_frame < len(self.frames[self.type]['engaged_frames']):
+                    self.image = self.frames[self.type]['engaged_frames'][self.current_frame]
+                    self.current_frame += 1
+                    self.rect = self.image.get_rect()
+                    self.rect.centerx = self.platform.rect.centerx
+                    self.rect.bottom = self.platform.rect.top
 
-        if self.engaged and now - self.last_update > 1500 and \
-           self.current_frame < len(self.engaged_frames):
-                self.image = self.engaged_frames[self.current_frame]
-                self.current_frame += 1
+            elif not self.engaged or self.current_frame >= len(self.frames[self.type]['engaged_frames']):
+                self.image = self.frames[self.type]['default_frame']
+                self.current_frame = 0
+                self.engaged = False
                 self.rect = self.image.get_rect()
                 self.rect.centerx = self.platform.rect.centerx
                 self.rect.bottom = self.platform.rect.top
-
-        elif not self.engaged or self.current_frame >= len(self.engaged_frames):
-            self.image = self.normal_frame
-            self.current_frame = 0
-            self.engaged = False
-            self.rect = self.image.get_rect()
-            self.rect.centerx = self.platform.rect.centerx
-            self.rect.bottom = self.platform.rect.top
+        if self.type == 'coin':
+            if now - self.last_update > 150 and self.current_frame < len(self.frames[self.type]['animation']):
+                self.last_update = now
+                self.image = self.frames[self.type]['animation'][self.current_frame]
+                self.current_frame = (self.current_frame + 1) % len(self.frames[self.type]['animation'])
+                self.rect = self.image.get_rect()
+                self.rect.centerx = self.platform.rect.centerx
+                self.rect.bottom = self.platform.rect.top
 
 
 class Mob(pg.sprite.Sprite):
@@ -283,4 +302,3 @@ class Mob(pg.sprite.Sprite):
         self.rect.y += self.vy
         if self.rect.left > WIDTH + 50 or self.rect.right < -50:
             self.kill()
-

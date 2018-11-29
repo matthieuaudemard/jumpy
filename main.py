@@ -20,6 +20,7 @@ class Game:
         self.snd_dir = path.join(self.dir, 'snd')
         self.img_dir = path.join(self.dir, 'img')
         self.highscore = 0
+        self.sounds = {}
         self.load_data()  # loading data and textures
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
@@ -41,9 +42,12 @@ class Game:
         """
         # load spritesheet image
         self.spritesheet = Spritesheet(path.join(self.img_dir, SPRITESHEET))
-        self.jump_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump42.wav'))
-        self.spring_sound = pg.mixer.Sound(path.join(self.snd_dir, 'Jump50.wav'))
-        self.spring_sound.set_volume(0.2)
+        self.sounds = {'jump': pg.mixer.Sound(path.join(self.snd_dir, 'Jump42.wav')),
+                       'spring': pg.mixer.Sound(path.join(self.snd_dir, 'Jump50.wav')),
+                       'coin': pg.mixer.Sound(path.join(self.snd_dir, 'Pickup_Coin26.wav')),
+                       'hurt': pg.mixer.Sound(path.join(self.snd_dir, 'Hit_Hurt44.wav')), }
+        for name in self.sounds:
+            self.sounds[name].set_volume(0.2)
         # load high score
         open_rights = 'w'
         hs_file = path.join(self.dir, HS_FILE)
@@ -105,6 +109,7 @@ class Game:
             self.player.hurted = True
             if self.player.current_frame > 2:
                 self.playing = False
+                self.sounds['hurt'].play()
 
         # check if player hits on a platform - only if falling
         if self.player.vel.y > 0:
@@ -129,8 +134,8 @@ class Game:
                     platform.kill()
                     self.score += 10
             # updating powerups positions
-            for pow_hit in self.powerups:
-                pow_hit.rect.y += max(abs(self.player.vel.y), 2)
+            for power in self.powerups:
+                power.rect.y += max(abs(self.player.vel.y), 2)
             # updating mobs positions
             for mob in self.mobs:
                 mob.rect.y += max(abs(self.player.vel.y), 2)
@@ -139,11 +144,16 @@ class Game:
         pow_hits = pg.sprite.spritecollide(self.player, self.powerups, False)
         for pow_hit in pow_hits:
 
-             if pow_hit.type == 'spring' and self.player.pos.y < pow_hit.rect.centery and self.player.vel.y >= 0:
-                        self.player.vel.y = -BOOST_POWER
-                        self.player.jumping = False
-                        pow_hit.engaged = True
-                        self.spring_sound.play()
+            if pow_hit.type == 'spring' and self.player.pos.y < pow_hit.rect.centery and self.player.vel.y >= 0:
+                self.player.vel.y = -BOOST_POWER
+                self.player.jumping = False
+                pow_hit.engaged = True
+                self.sounds['spring'].play()
+
+            if pow_hit.type == 'coin':
+                self.score += 100
+                pow_hit.kill()
+                self.sounds['coin'].play()
 
         # die !
         if self.player.rect.bottom > HEIGHT:
