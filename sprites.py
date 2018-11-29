@@ -119,27 +119,25 @@ class Player(pg.sprite.Sprite):
             self.image = self.jump_frame
 
         # show walk animation
-        if self.walking and not self.jumping and not self.hurted:
-            if now - self.last_update > 100:
-                self.last_update = now
-                self.current_frame = (self.current_frame + 1) % len(self.walking_frames_l)
-                bottom = self.rect.bottom
-                if self.vel.x > 0:
-                    self.image = self.walking_frames_r[self.current_frame]
-                else:
-                    self.image = self.walking_frames_l[self.current_frame]
-                self.rect = self.image.get_rect()
-                self.rect.bottom = bottom
+        if self.walking and not self.jumping and not self.hurted and now - self.last_update > 100:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.walking_frames_l)
+            bottom = self.rect.bottom
+            if self.vel.x > 0:
+                self.image = self.walking_frames_r[self.current_frame]
+            else:
+                self.image = self.walking_frames_l[self.current_frame]
+            self.rect = self.image.get_rect()
+            self.rect.bottom = bottom
 
         # show idle animation
-        if not self.jumping and not self.walking and not self.hurted:
-            if now - self.last_update > 350:
-                self.last_update = now
-                self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
-                bottom = self.rect.bottom
-                self.image = self.standing_frames[self.current_frame]
-                self.rect = self.image.get_rect()
-                self.rect.bottom = bottom
+        if not self.jumping and not self.walking and not self.hurted and now - self.last_update > 350:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
+            bottom = self.rect.bottom
+            self.image = self.standing_frames[self.current_frame]
+            self.rect = self.image.get_rect()
+            self.rect.bottom = bottom
         self.mask = pg.mask.from_surface(self.image)
 
     def update(self):
@@ -255,8 +253,9 @@ class Pow(pg.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.centerx = self.platform.rect.centerx
                 self.rect.bottom = self.platform.rect.top
-        if self.type == 'coin':
-            if now - self.last_update > 150 and self.current_frame < len(self.frames[self.type]['animation']):
+        if self.type == 'coin' and \
+           now - self.last_update > 150 and \
+           self.current_frame < len(self.frames[self.type]['animation']):
                 self.last_update = now
                 self.image = self.frames[self.type]['animation'][self.current_frame]
                 self.current_frame = (self.current_frame + 1) % len(self.frames[self.type]['animation'])

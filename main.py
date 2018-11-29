@@ -176,8 +176,7 @@ class Game:
                 x = random.randrange(0, WIDTH - 30)
                 copy = self.platforms.copy()
                 p = Platform(self, x, y)
-                while pg.sprite.spritecollide(p, copy, True):
-                    pass
+                pg.sprite.spritecollide(p, copy, True)
         except ValueError:
             pass
 
@@ -198,9 +197,8 @@ class Game:
                     self.player.jump()
                 if event.key == pg.K_ESCAPE:
                     pg.event.post(pg.event.Event(pg.QUIT))
-            if event.type == pg.KEYUP:
-                if event.key == pg.K_SPACE:
-                    self.player.jump_cut()
+            if event.type == pg.KEYUP and event.key == pg.K_SPACE:
+                self.player.jump_cut()
 
     def draw(self):
         """
