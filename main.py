@@ -161,7 +161,7 @@ class Game:
                 sprite.rect.y -= max(self.player.vel.y, 10)
                 if sprite.rect.bottom < 0:
                     sprite.kill()
-        if len(self.platforms) == 0:
+        if len(self.platforms) == 0 or self.player.rect.y > 1.5 * HEIGHT:
             self.playing = False
 
         # spawn new platforms to keep some average number
