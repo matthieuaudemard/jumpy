@@ -94,8 +94,8 @@ class Player(pg.sprite.Sprite):
         Cut the jump in case of a quick space key press
         :return:
         """
-        if self.jumping and self.vel.y < 0:
-            self.vel.y = -8
+        if self.jumping and self.vel.y < -3:
+            self.vel.y = -3
 
     def animate(self):
         """
@@ -278,7 +278,7 @@ class Mob(pg.sprite.Sprite):
         self.image = self.image_up
         self.rect = self.image.get_rect()
         self.rect.centerx = choice([-self.rect.width, WIDTH + self.rect.width])
-        self.vx = randrange(1, 4)
+        self.vx = randrange(MOB_MIN_SPEED, MOB_MAX_SPEED - 1)
         if self.rect.centerx > WIDTH:
             self.vx = -self.vx
         self.rect.y = HEIGHT / 3  # randrange(HEIGHT / 2)  # the mob spawns in the high middle of the screen
