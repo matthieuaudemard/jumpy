@@ -17,7 +17,7 @@ python -m pip install -U pygame --user
 
 ## TODO
 * ~~sounds~~
-* ennemies
-* powerups
+* ~~ennemies~~
+* ~~powerups~~
 * improve collision (mask collision)
 * scrolling background
