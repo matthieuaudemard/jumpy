@@ -19,5 +19,5 @@ python -m pip install -U pygame --user
 * ~~sounds~~
 * ~~ennemies~~
 * ~~powerups~~
-* improve collision (mask collision)
-* scrolling background
+* ~~improve collision (mask collision)~~
+* ~~scrolling background~~
